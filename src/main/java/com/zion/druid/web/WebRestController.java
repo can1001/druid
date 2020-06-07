@@ -34,7 +34,7 @@ public class WebRestController {
     }
 
     /**
-     * 00
+     * 0. API
      * @param parsingUrl
      * @param parsingType
      * @param outputBundle
@@ -101,57 +101,6 @@ public class WebRestController {
         return new ResponseEntity<Map<String, Object>>(resultMap, HttpStatus.OK);
     }
 
-    private String[] getUpperCaseLowerCaseSort(String x) {
-        x = "AAAaaaBb";
-
-        String[] arr = new String[x.length()];
-        // String[] arr2 = new String[x.length()];
-
-
-
-        for (int i = 0; i < x.length(); i++) {
-            arr[i] = x.substring(i, i + 1);
-            // arr2[i] = x.substring(i, i + 1);
-        }
-
-        char[] ch = x.toCharArray();
-        // System.out.print(ch);
-
-        // Arrays.sort(arr, (o1, o2) -> o1.compareToIgnoreCase(o2));
-
-        final boolean[] blnCase = {true};
-        Arrays.sort(arr, (o1, o2) -> {
-            if (o1.equalsIgnoreCase(o2)) {
-                if (blnCase[0]) {
-                    if (o1.toUpperCase().equals(o1)) {
-                        blnCase[0] = true;
-                        return -1;
-                    } else {
-                        blnCase[0] = false;
-                        return 1;
-                    }
-                } else {
-                    if (o1.toUpperCase().equals(o1)) {
-                        blnCase[0] = false;
-                        return 1;
-                    } else {
-                        blnCase[0] = true;
-                        return -1;
-                    }
-                }
-            } else {
-                return o1.compareToIgnoreCase(o2);
-            }
-        });
-
-        for (String item : arr) {
-            System.out.print(item);
-        }
-
-
-        return arr;
-    }
-
     /**
      * 1. Jsoup parser를 이용한 웹 페이지 크롤링
      * @param parsingUrl
@@ -198,26 +147,33 @@ public class WebRestController {
     }
 
     /**
-     * 2-2 숫자만 출력
-     * @param result
+     * 2-1-1. 영어 대문자 후 소문자 식으로 정렬
+     * @param x
      * @return
      */
-    private String getNumberPrint_(String result) {
-        String numberPrint = "";
+    private String[] getUpperCaseLowerCaseSort(String x) {
+        String[] arr = new String[x.length()];
+        for (int i = 0; i < x.length(); i++) {
+            arr[i] = x.substring(i, i + 1);
+        }
 
-        IntStream stream = result.chars();
-        String intStr = stream.filter((ch)-> (48 <= ch && ch <= 57))
-                .mapToObj(ch -> (char)ch)
-                .map(Object::toString)
-                .collect(Collectors.joining())
-                // .compareTo()
-        ;
+        Arrays.sort(arr, (o1, o2) -> {
+            if (o1.equalsIgnoreCase(o2)) {
+                if (o1.toUpperCase().equals(o1)) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            } else {
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
 
-        System.out.println(intStr);
+//        for (String item : arr) {
+//            System.out.print(item);
+//        }
 
-        numberPrint = intStr;
-
-        return numberPrint;
+        return arr;
     }
 
     /**
