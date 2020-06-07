@@ -1,5 +1,6 @@
 package com.zion.druid.web;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -33,6 +36,9 @@ public class WebRestController {
 
     @GetMapping("/druid")
     public String druid(@RequestParam(value = "type", required = false, defaultValue = "") String type) throws IOException {
+        JSONPObject responseJson = null;
+
+        String result = "";
 
         // 1. Jsoup parser를 이용한 웹 페이지 크롤링
         String crawling = getCrawling(type);
@@ -41,26 +47,51 @@ public class WebRestController {
         // 2-1. 영어만 출력
         String englishPrint = getExtract(crawling, "[a-zA-Z]");
 
-        // 2-1-1. 영어 대문자후 소문자식으로 정
-        String upperCaseLowerCaseSort = getUpperCaseLowerCaseSort(englishPrint);
-
+        // 2-1-1. 영어 대문자 후 소문자 식으로 정렬
+        String[] upperCaseLowerCaseSort = getUpperCaseLowerCaseSort(englishPrint);
 
         // 2-2 숫자만 출력
-        // String numberPrint = getExtract(crawling, "[0-9]");
-        String numberPrint = getAscendingNumberPrint(crawling);
+        String[] numberPrint = getAscendingNumberPrint(crawling).split("");
 
-        // 2-2-1 sort
-        // ArrayList<String> list = new ArrayList<>(numberPrint);
-        // numberPrint.sort();
-        // Collections.sort(numberPrint);
+        // 4. 교차출력
+        int maxLength = 0;
 
+        if (upperCaseLowerCaseSort.length > numberPrint.length) {
+            maxLength = upperCaseLowerCaseSort.length;
+        } else {
+            maxLength = numberPrint.length;
+        }
 
-        return upperCaseLowerCaseSort;
+        for (int i = 0; i < maxLength; i++) {
+            if (i < upperCaseLowerCaseSort.length) {
+                result += upperCaseLowerCaseSort[i];
+            }
+            if (i < numberPrint.length) {
+                result += numberPrint[i];
+            }
+        }
+
+        // 5. 출력묶음단위출력
+        int intLength = result.length();
+        int outputBundle = 100;
+        int share = intLength / outputBundle;
+        int rest  = intLength % outputBundle;
+
+        String shareString = result.substring(0, share * outputBundle -1);
+        String restString = result.substring(share * outputBundle);
+
+        // responseJson = new JSONPObject();
+        // responseJson.
+        return shareString;
     }
 
-    private String getUpperCaseLowerCaseSort(String x) {
+    private String[] getUpperCaseLowerCaseSort(String x) {
+        // x = "AAAaaaBb";
+
         String[] arr = new String[x.length()];
-        String[] arr2 = new String[x.length()];
+        // String[] arr2 = new String[x.length()];
+
+
 
         for (int i = 0; i < x.length(); i++) {
             arr[i] = x.substring(i, i + 1);
@@ -70,20 +101,25 @@ public class WebRestController {
         char[] ch = x.toCharArray();
         // System.out.print(ch);
 
-        String sortCase = "upperCase";
+        // Arrays.sort(arr, (o1, o2) -> o1.compareToIgnoreCase(o2));
 
+        final boolean[] blnCase = {true};
         Arrays.sort(arr, (o1, o2) -> {
             if (o1.equalsIgnoreCase(o2)) {
-                if (sortCase.equals("upperCase")) {
+                if (blnCase[0]) {
                     if (o1.toUpperCase().equals(o1)) {
+                        blnCase[0] = true;
                         return -1;
                     } else {
+                        blnCase[0] = false;
                         return 1;
                     }
                 } else {
                     if (o1.toUpperCase().equals(o1)) {
+                        blnCase[0] = false;
                         return 1;
                     } else {
+                        blnCase[0] = true;
                         return -1;
                     }
                 }
@@ -96,7 +132,8 @@ public class WebRestController {
             System.out.print(item);
         }
 
-        return arr2.toString();
+
+        return arr;
     }
 
     /**
@@ -182,7 +219,7 @@ public class WebRestController {
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.joining());
 
-        System.out.println(intStr);
+        // System.out.println(intStr);
 
         numberPrint = intStr;
 
