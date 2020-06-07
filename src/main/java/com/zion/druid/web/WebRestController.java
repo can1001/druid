@@ -33,6 +33,14 @@ public class WebRestController {
 //        return "HelloWorld";
     }
 
+    /**
+     * 00
+     * @param parsingUrl
+     * @param parsingType
+     * @param outputBundle
+     * @return
+     * @throws IOException
+     */
     @GetMapping("/druid")
     public Object druid(@RequestParam(value = "type", required = false, defaultValue = "") String type) throws IOException {
         JSONPObject responseJson = null;
@@ -77,8 +85,14 @@ public class WebRestController {
         int share = intLength / outputBundle;
         int rest  = intLength % outputBundle;
 
-        String shareString = result.substring(0, share * outputBundle -1);
-        String restString = result.substring(share * outputBundle);
+        String shareString = "";
+        String restString = "";
+        if (share != 0) {
+            shareString = result.substring(0, share * outputBundle -1);
+            restString = result.substring(share * outputBundle);
+        } else {
+            restString = result;
+        }
 
         // 결과값( 몫, 나머지 )
         resultMap.put("shareString", shareString);
@@ -88,7 +102,7 @@ public class WebRestController {
     }
 
     private String[] getUpperCaseLowerCaseSort(String x) {
-        // x = "AAAaaaBb";
+        x = "AAAaaaBb";
 
         String[] arr = new String[x.length()];
         // String[] arr2 = new String[x.length()];
