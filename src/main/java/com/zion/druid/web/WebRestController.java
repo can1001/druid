@@ -3,15 +3,14 @@ package com.zion.druid.web;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -35,8 +34,9 @@ public class WebRestController {
     }
 
     @GetMapping("/druid")
-    public String druid(@RequestParam(value = "type", required = false, defaultValue = "") String type) throws IOException {
+    public Object druid(@RequestParam(value = "type", required = false, defaultValue = "") String type) throws IOException {
         JSONPObject responseJson = null;
+        Map<String, Object> resultMap = new LinkedHashMap<String, Object>();
 
         String result = "";
 
@@ -80,9 +80,11 @@ public class WebRestController {
         String shareString = result.substring(0, share * outputBundle -1);
         String restString = result.substring(share * outputBundle);
 
-        // responseJson = new JSONPObject();
-        // responseJson.
-        return shareString;
+        // 결과값( 몫, 나머지 )
+        resultMap.put("shareString", shareString);
+        resultMap.put("restString", restString);
+
+        return new ResponseEntity<Map<String, Object>>(resultMap, HttpStatus.OK);
     }
 
     private String[] getUpperCaseLowerCaseSort(String x) {
