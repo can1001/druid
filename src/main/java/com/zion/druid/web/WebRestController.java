@@ -151,7 +151,7 @@ public class WebRestController {
      * @param x
      * @return
      */
-    private String[] getUpperCaseLowerCaseSort(String x) {
+    public String[] getUpperCaseLowerCaseSort(String x) {
         String[] arr = new String[x.length()];
         for (int i = 0; i < x.length(); i++) {
             arr[i] = x.substring(i, i + 1);
