@@ -1,8 +1,9 @@
 package com.zion.druid.web;
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,19 +20,7 @@ import java.util.stream.IntStream;
 @RestController
 public class WebRestController {
 
-    @GetMapping("/hello")
-    public String hello() throws IOException {
-
-        // 1. Jsoup parser를 이용한 웹 페이지 크롤링
-        String URL = "https://m.blog.naver.com/PostView.nhn?blogId=sky930425&logNo=221562017606&proxyReferer=https:%2F%2Fwww.google.com%2F";
-        Document doc = Jsoup.connect(URL).get();
-
-        doc.text();
-        doc.html();
-
-        return doc.text();
-//        return "HelloWorld";
-    }
+    private Logger logger = LoggerFactory.getLogger(WebRestController.class);
 
     /**
      * 0. API
@@ -42,48 +31,23 @@ public class WebRestController {
      * @throws IOException
      */
     @GetMapping("/druid")
-    public Object druid(@RequestParam(value = "type", required = false, defaultValue = "") String type) throws IOException {
-        JSONPObject responseJson = null;
+    public ResponseEntity<?> druid(@RequestParam(value = "parsingUrl", required = false, defaultValue = "") String parsingUrl
+                      , @RequestParam(value = "parsingType", required = false, defaultValue = "") String parsingType
+                      , @RequestParam(value = "outputBundle", required = false, defaultValue = "") int outputBundle) throws IOException {
+
         Map<String, Object> resultMap = new LinkedHashMap<String, Object>();
 
         String result = "";
 
         // 1. Jsoup parser를 이용한 웹 페이지 크롤링
-        String crawling = getCrawling(type);
+        String crawling = getCrawling(parsingUrl, parsingType);
 
-        // 2. 영어, 숫자만 출력
-        // 2-1. 영어만 출력
-        String englishPrint = getExtract(crawling, "[a-zA-Z]");
+        // 2. 오름차순 영어, 숫자만  교차 출력
+        result = getAscendingOnlyEnglishNumberCrossPrint(crawling);
 
-        // 2-1-1. 영어 대문자 후 소문자 식으로 정렬
-        String[] upperCaseLowerCaseSort = getUpperCaseLowerCaseSort(englishPrint);
-
-        // 2-2 숫자만 출력
-        String[] numberPrint = getAscendingNumberPrint(crawling).split("");
-
-        // 4. 교차출력
-        int maxLength = 0;
-
-        if (upperCaseLowerCaseSort.length > numberPrint.length) {
-            maxLength = upperCaseLowerCaseSort.length;
-        } else {
-            maxLength = numberPrint.length;
-        }
-
-        for (int i = 0; i < maxLength; i++) {
-            if (i < upperCaseLowerCaseSort.length) {
-                result += upperCaseLowerCaseSort[i];
-            }
-            if (i < numberPrint.length) {
-                result += numberPrint[i];
-            }
-        }
-
-        // 5. 출력묶음단위출력
+        // 3. 출력묶음단위출력 ( 몫, 나머지 )
         int intLength = result.length();
-        int outputBundle = 100;
         int share = intLength / outputBundle;
-        int rest  = intLength % outputBundle;
 
         String shareString = "";
         String restString = "";
@@ -94,7 +58,7 @@ public class WebRestController {
             restString = result;
         }
 
-        // 결과값( 몫, 나머지 )
+        // 3-1. 결과값( 몫, 나머지 )
         resultMap.put("shareString", shareString);
         resultMap.put("restString", restString);
 
@@ -102,21 +66,64 @@ public class WebRestController {
     }
 
     /**
+     * 2. 오름차순 영어, 숫자만  교차 출력
+     * @param crawling
+     * @return
+     */
+    public String getAscendingOnlyEnglishNumberCrossPrint(String crawling) {
+        String ascendingOnlyEnglishNumberCrossPrint = "";
+
+        logger.debug("getAscendingOnlyEnglishNumberCrossPrint : crawling=" + crawling);
+
+        // 2-1. 영어만 출력
+        String englishPrint = getExtract(crawling, "[a-zA-Z]");
+
+        // 2-1-1. 영어 대문자 후 소문자 식으로 정렬 (오름차순 정렬)
+        String[] upperCaseLowerCaseSort = getUpperCaseLowerCaseSort(englishPrint);
+
+        // 2-2 숫자만 출력 (오름차순 정렬)
+        String[] numberPrint = getAscendingNumberPrint(crawling).split("");
+
+        // 2-3. 교차출력
+        int maxLength = 0;
+
+        if (upperCaseLowerCaseSort.length > numberPrint.length) {
+            maxLength = upperCaseLowerCaseSort.length;
+        } else {
+            maxLength = numberPrint.length;
+        }
+
+        for (int i = 0; i < maxLength; i++) {
+            if (i < upperCaseLowerCaseSort.length) {
+                ascendingOnlyEnglishNumberCrossPrint += upperCaseLowerCaseSort[i];
+            }
+            if (i < numberPrint.length) {
+                ascendingOnlyEnglishNumberCrossPrint += numberPrint[i];
+            }
+        }
+
+        logger.debug("getAscendingOnlyEnglishNumberCrossPrint : ascendingOnlyEnglishNumberCrossPrint=" + ascendingOnlyEnglishNumberCrossPrint);
+
+        return ascendingOnlyEnglishNumberCrossPrint;
+    }
+
+    /**
      * 1. Jsoup parser를 이용한 웹 페이지 크롤링
      * @param parsingUrl
      * @param parsingType
-     * @param outputBundle
      * @return
      * @throws IOException
      */
-    private String getCrawling(@RequestParam(value = "parsingType", required = false, defaultValue = "") String parsingType) throws IOException {
+    private String getCrawling(@RequestParam(value = "parsingUrl", required = false, defaultValue = "") String parsingUrl
+                             , @RequestParam(value = "parsingType", required = false, defaultValue = "") String parsingType) throws IOException {
         String result;
 
         // 1. Jsoup parser를 이용한 웹 페이지 크롤링
-        String URL = "https://m.blog.naver.com/PostView.nhn?blogId=sky930425&logNo=221562017606&proxyReferer=https:%2F%2Fwww.google.com%2F";
-        Document doc = Jsoup.connect(URL).get();
+        logger.debug("getCrawling : parsingUrl=" + parsingUrl);
 
-        // System.out.println(type);
+        Document doc = Jsoup.connect(parsingUrl).get();
+
+        logger.debug("getCrawling : parsingType=" + parsingType);
 
         if ( parsingType.equals("html") ) {
             result = doc.html();
@@ -191,11 +198,25 @@ public class WebRestController {
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.joining());
 
-        // System.out.println(intStr);
+        logger.debug("getAscendingNumberPrint : numberPrint=" + intStr);
 
         numberPrint = intStr;
 
         return numberPrint;
+    }
+
+    @GetMapping("/hello")
+    public String hello() throws IOException {
+
+        // 1. Jsoup parser를 이용한 웹 페이지 크롤링
+        String URL = "https://m.blog.naver.com/PostView.nhn?blogId=sky930425&logNo=221562017606&proxyReferer=https:%2F%2Fwww.google.com%2F";
+        Document doc = Jsoup.connect(URL).get();
+
+        doc.text();
+        doc.html();
+
+        return doc.text();
+
     }
 
 }
