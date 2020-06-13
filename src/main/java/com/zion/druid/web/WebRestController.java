@@ -73,10 +73,13 @@ public class WebRestController {
     public String getAscendingOnlyEnglishNumberCrossPrint(String crawling) {
         String ascendingOnlyEnglishNumberCrossPrint = "";
 
-        logger.debug("getAscendingOnlyEnglishNumberCrossPrint : crawling=" + crawling);
+        // logger.debug("getAscendingOnlyEnglishNumberCrossPrint : crawling=" + crawling);
 
         // 2-1. 영어만 출력
         String englishPrint = getExtract(crawling, "[a-zA-Z]");
+
+        logger.debug("englishPrint.length : " + englishPrint.length());
+        logger.debug("getAscendingOnlyEnglishNumberCrossPrint : englishPrint=" + englishPrint);
 
         // 2-1-1. 영어 대문자 후 소문자 식으로 정렬 (오름차순 정렬)
         String[] upperCaseLowerCaseSort = getUpperCaseLowerCaseSort(englishPrint);

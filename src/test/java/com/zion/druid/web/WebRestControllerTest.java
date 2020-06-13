@@ -26,9 +26,22 @@ public class WebRestControllerTest {
     }
 
     @Test
-    public void druid() throws IOException {
+    public void testParsingTypeText() throws IOException {
         String parsingUrl   = "https://m.blog.naver.com/PostView.nhn?blogId=sky930425&logNo=221562017606&proxyReferer=https:%2F%2Fwww.google.com%2F";
         String parsingType  = "text";
+        int outputBundle    = 100;
+
+        ResponseEntity<Map<String, Object>> actualResult = (ResponseEntity<Map<String, Object>>) restController.druid(parsingUrl, parsingType, outputBundle);
+        logger.debug("druid : shareString=" + String.valueOf(actualResult.getBody().get("shareString")));
+        logger.debug("druid : restString=" + String.valueOf(actualResult.getBody().get("restString")));
+        assertThat(actualResult.getBody().get("restString"), equalTo(
+                "uuuuuuuVVVVVVVVVVVVvvvvvvvvvvwwwwwwwwxxxxYyyyyyyyyyyyyyzzzzzzzzz"));
+    }
+
+    @Test
+    public void testParsingTypeHtml() throws IOException {
+        String parsingUrl   = "https://m.blog.naver.com/PostView.nhn?blogId=sky930425&logNo=221562017606&proxyReferer=https:%2F%2Fwww.google.com%2F";
+        String parsingType  = "html";
         int outputBundle    = 100;
 
         ResponseEntity<Map<String, Object>> actualResult = (ResponseEntity<Map<String, Object>>) restController.druid(parsingUrl, parsingType, outputBundle);
