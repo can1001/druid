@@ -48,7 +48,7 @@ public class WebRestControllerTest {
         logger.debug("druid : shareString=" + String.valueOf(actualResult.getBody().get("shareString")));
         logger.debug("druid : restString=" + String.valueOf(actualResult.getBody().get("restString")));
         assertThat(actualResult.getBody().get("restString"), equalTo(
-                "uuuuuuuVVVVVVVVVVVVvvvvvvvvvvwwwwwwwwxxxxYyyyyyyyyyyyyyzzzzzzzzz"));
+                "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"));
     }
 
     @Test

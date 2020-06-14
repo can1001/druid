@@ -167,17 +167,20 @@ public class WebRestController {
             arr[i] = x.substring(i, i + 1);
         }
 
-        Arrays.sort(arr, (o1, o2) -> {
-            if (o1.equalsIgnoreCase(o2)) {
-                if (o1.toUpperCase().equals(o1)) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            } else {
-                return o1.compareToIgnoreCase(o2);
-            }
-        });
+        Arrays.sort(arr); // capital -> lower case
+        Arrays.sort(arr, String.CASE_INSENSITIVE_ORDER); // upper case = lower case
+
+//        Arrays.sort(arr, (o1, o2) -> {
+//            if (o1.equalsIgnoreCase(o2)) {
+//                if (o1.toUpperCase().equals(o1)) {
+//                    return -1;
+//                } else {
+//                    return 1;
+//                }
+//            } else {
+//                return o1.compareToIgnoreCase(o2);
+//            }
+//        });
 
 //        for (String item : arr) {
 //            System.out.print(item);
